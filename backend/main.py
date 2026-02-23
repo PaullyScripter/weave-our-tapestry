@@ -1,3 +1,15 @@
+"""
+Main Weave Our Tapestry - FastAPI Entry Point
+
+Objectives:
+- Create FastAPI app
+- Register routers
+- Initialize database tables
+- Add global error handler
+- Add logging configuration
+"""
+
+
 from fastapi import FastAPI
 from api.routes import router
 

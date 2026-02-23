@@ -1,3 +1,12 @@
+"""
+Database Models
+
+- Defines database tables.
+- Add views column (default=0)
+- Add rating support
+"""
+
+
 from sqlalchemy import Column, Integer, String, Text
 from .db import Base
 

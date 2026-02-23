@@ -1,3 +1,20 @@
+"""
+API Routes Layer
+
+Objectives:
+- Define HTTP endpoints
+- Validate request inputs
+- Call DB and feature logic
+- Return JSON responses
+- Add GET /api/stories/{id}
+- Improve error handling
+- Add /api/search endpoint
+- Add sorting parameters
+"""
+
+
+
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
