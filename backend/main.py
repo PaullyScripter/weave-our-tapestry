@@ -1,6 +1,6 @@
 """
-Main Weave Our Tapestry - FastAPI Entry Point
-
+Main Weave Our Tapestry - FastAPI Server Entry Point
+File Description: Starts the backend server and connects everything
 Objectives:
 - Create FastAPI app
 - Register routers

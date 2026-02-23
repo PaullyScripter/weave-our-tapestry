@@ -1,5 +1,6 @@
 """
 Database Models
+File Description: Defines what a “Story” looks like in the database - blueprint for storing data
 
 - Defines database tables.
 - Add views column (default=0)
