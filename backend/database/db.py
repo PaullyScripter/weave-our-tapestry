@@ -1,3 +1,14 @@
+"""
+Database - Connector to Neon DB
+File Description: connect to database + keep DB credentials
+
+Objectives:
+- Confirm .env not tracked
+- Connection pooling settings
+- Migration tools
+"""
+
+
 import os
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
