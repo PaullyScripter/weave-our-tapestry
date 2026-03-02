@@ -12,6 +12,9 @@ Objectives:
 
 from fastapi import FastAPI
 from api.routes import router
+from database.db import engine
+from database.db import Base
+
 
 app = FastAPI(title="Weave Our Tapestry API")
 
