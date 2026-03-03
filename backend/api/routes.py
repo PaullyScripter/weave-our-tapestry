@@ -81,7 +81,7 @@ def search_stories(
     limit: int  = Query(10, ge = 1, le = 100), #items per page 1-100
     offset: int = Query(0 , ge = 0), #items to skip
     sort: str = Query("view" , pattern = "^(views|newest|relevance)$"), 
-    db = Session = Depends(get_db), 
+    db: Session = Depends(get_db), 
 ):
     
     query_text = q.strip() #removes space
@@ -89,9 +89,9 @@ def search_stories(
 
     #search filter => ilike: case-insensitive match in Postgres
     filters = or_(
-        Story.title.ilike(pattern)
-        Story.culture.ilike(pattern)
-        Story.text.ilike(pattern)
+        Story.title.ilike(pattern),
+        Story.culture.ilike(pattern),
+        Story.text.ilike(pattern),
     )
 
     total = db.query(func.count(Story.id)).filter(filters).scalar() or 0
