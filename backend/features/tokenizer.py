@@ -7,3 +7,9 @@ Objectives:
 -word list
 
 """
+import re
+from typing import List
+
+def tokenize(text: str) -> List[str]:
+    #implement Simple MVP tokenizer
+    {}
