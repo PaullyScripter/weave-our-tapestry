@@ -22,6 +22,9 @@ from typing import Optional, List
 from database.db import SessionLocal
 from database.model import Story
 
+#files from /features
+from features.engagement import increment_story_views
+
 
 router = APIRouter(prefix="/api", tags=["api"])
 
@@ -133,16 +136,15 @@ def search_stories(
     
 
 
+
 @router.post("/stories/{story_id}/views")
 def increment_views(story_id: int, db:Session = Depends(get_db)):
-    story = db.query(Story).filter(Story.id == story_id).first()
+    #OLD: story = db.query(Story).filter(Story.id == story_id).first()
+    story = increment_story_views(db, story_id)
     if story is None:
         raise HTTPException(status_code = 404, detail = "Story not found")
-    #automatic increment when reading
-    story.views = (story.views or 0)  + 1
-    db.commit()
-    db.refresh(story)
     return {"id" : story.id, "views": story.views}
+
         
 
 @router.post("/stories", response_model=StoryOut)
