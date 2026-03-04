@@ -1,19 +1,11 @@
-# Weave Our Tapestry - API Contract(Generated)
+# Weave Our Tapestry - API Contrac(Generated)
 
-## Health Check
-
-GET /health
-
-Response:
-{
-  "status": "ok"
-}
+## Base URL
+Local: http://127.0.0.1:8000/api
 
 ---
 
-## Stories
-
-### GET /api/stories
+## GET /stories
 
 Returns:
 [
@@ -21,13 +13,14 @@ Returns:
     "id": number,
     "title": string,
     "culture": string | null,
-    "text": string
+    "text": string,
+    "views": number
   }
 ]
 
 ---
 
-### POST /api/stories
+## POST /stories
 
 Request:
 {
@@ -41,29 +34,47 @@ Response:
   "id": number,
   "title": string,
   "culture": string | null,
-  "text": string
+  "text": string,
+  "views": number
 }
 
 ---
 
-### GET /api/stories/{id}
+## GET /stories/{id}
 
 Response:
 {
   "id": number,
   "title": string,
   "culture": string | null,
-  "text": string
+  "text": string,
+  "views": number
 }
 
-If not found:
-404 Error
+Error (404):
+{
+  "detail": "Story not found"
+}
 
 ---
 
-## Search (Sprint 2)
+## POST /stories/{id}/views
 
-GET /api/search?q=keyword
+Response:
+{
+  "id": number,
+  "views": number
+}
+
+---
+
+## GET /search
+
+Query Params:
+- q (required)
+- limit (default 10)
+- offset (default 0)
+- sort (views | newest | relevance)
 
 Response:
 {
@@ -73,9 +84,9 @@ Response:
     {
       "id": number,
       "title": string,
-      "culture": string,
-      "score": number,
-      "snippet": string
+      "culture": string | null,
+      "snippet": string,
+      "views": number
     }
   ]
 }
