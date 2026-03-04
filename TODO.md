@@ -57,9 +57,9 @@ This keeps logic centralized (search, sorting, counting) and keeps DB credential
 
 ## Dolphin (Backend + PO)
 ### D1 — Setup / stability docs
-- [ ] Add run instructions (backend + frontend)
-- [ ] Confirm `.env` is NOT committed
-- [ ] Confirm repo structure is stable
+- [ done] Add run instructions (backend + frontend)
+- [ done] Confirm `.env` is NOT committed
+- [ done] Confirm repo structure is stable
 
 Why:
 If teammates can’t run the project easily, progress stalls.
@@ -70,9 +70,9 @@ A teammate can run both servers from the README without help.
 ---
 
 ### D2 — Story Detail API (GET one story)
-- [ ] Add endpoint: GET /api/stories/{id}
+- [ done] Add endpoint: GET /api/stories/{id}
 - [ ] Return 404 if not found
-- [ ] Test in Swagger (/docs)
+- [done ] Test in Swagger (/docs)
 
 Why:
 Frontend needs a story detail page (click result → see full story).
@@ -101,9 +101,9 @@ Paul confirms the contract matches the UI needs.
 
 ## Titus (Database)
 ### T1 — Add views counter to Story
-- [ ] Add `views` field to Story (default 0)
-- [ ] Verify it saves in Neon
-- [ ] Verify it appears in GET /api/stories output
+- [done ] Add `views` field to Story (default 0)
+- [done ] Verify it saves in Neon
+- [done ] Verify it appears in GET /api/stories output
 
 Why:
 Enables “most viewed” sorting later and teaches DB updates.

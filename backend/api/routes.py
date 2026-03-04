@@ -13,13 +13,15 @@ Objectives:
 - Add sorting parameters
 """
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
+from sqlalchemy import or_, func
 from pydantic import BaseModel
 from typing import Optional, List
 
 from database.db import SessionLocal
 from database.model import Story
+
 
 router = APIRouter(prefix="/api", tags=["api"])
 
@@ -30,6 +32,8 @@ def get_db():
         yield db
     finally:
         db.close()
+
+#API contract
 
 class StoryCreate(BaseModel):
     title: str
@@ -46,18 +50,88 @@ class StoryOut(BaseModel):
     class Config:
         from_attributes = True
 
+class SearchResultItem(BaseModel):
+    id: int
+    title: str
+    culture: Optional[str]
+    text: str
+    views: int
+
+class SearchResponse(BaseModel):
+    query: str
+    total: int
+    results: List[SearchResultItem]
+
+
 @router.get("/stories", response_model=List[StoryOut])
 def list_stories(db: Session = Depends(get_db)):
     return db.query(Story).all()
 
-
 #receives story_id from URL + queries DB for ID
 @router.get("/stories/{story_id}", response_model = StoryOut)
 def get_story(story_id: int, db: Session = Depends(get_db)):
-    story = db.query(Story).filter(Story.id == story.id).first()
+    story = db.query(Story).filter(Story.id == story_id).first()
     if story is None:
         raise HTTPException(status_code = 404, detail = "Story not found")
     return story
+
+#registers GET endpoint for search
+@router.get("/search", response_model = SearchResponse)
+def search_stories(
+    q: str = Query(..., min_length = 1), #required at least 1 text
+    limit: int  = Query(10, ge = 1, le = 100), #items per page 1-100
+    offset: int = Query(0 , ge = 0), #items to skip
+    sort: str = Query("view" , pattern = "^(views|newest|relevance)$"), 
+    db: Session = Depends(get_db), 
+):
+    
+    query_text = q.strip() #removes space
+    pattern = f"%{query_text}%" #matches texts
+
+    #search filter => ilike: case-insensitive match in Postgres
+    filters = or_(
+        Story.title.ilike(pattern),
+        Story.culture.ilike(pattern),
+        Story.text.ilike(pattern),
+    )
+
+    #find how many searches match
+    total = db.query(func.count(Story.id)).filter(filters).scalar() or 0
+
+    #sort
+    if sort == "newest":
+        order_by = (Story.id.desc(),)
+    else:
+        order_by = (Story.views.desc(), Story.id.desc())
+
+    #db query
+    rows = (
+        db.query(Story)
+        .filter(filters)
+        .order_by(*order_by)
+        .offset(offset)
+        .limit(limit)
+        .all()
+    )
+
+    #display result snippets until user decide to open or not
+    results: List[SearchResultItem] = []
+    for s in rows:
+        raw = s.text or ""
+        snippet = raw[:160].strip() + ("..." if len(raw) > 160 else "")
+        results.append(
+            SearchResultItem(
+                id = s.id,
+                title = s.title,
+                culture = s.culture,
+                snippet = snippet,
+                views = s.views,
+            )
+        )
+        #return typed Pydantic object
+        return SearchResponse(query = query_text, total = int(total),  results = results)
+    
+
 
 @router.post("/stories/{story_id}/views")
 def increment_views(story_id: int, db:Session = Depends(get_db)):
