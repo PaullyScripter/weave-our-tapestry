@@ -19,11 +19,11 @@ from sqlalchemy import or_, func
 from pydantic import BaseModel
 from typing import Optional, List
 
-from database.db import SessionLocal
-from database.model import Story
+from ..database.db import SessionLocal
+from ..database.model import Story
 
 #files from /features
-from features.engagement import increment_story_views
+from ..features.engagement import increment_story_views
 
 
 router = APIRouter(prefix="/api", tags=["api"])

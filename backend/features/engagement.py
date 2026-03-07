@@ -7,7 +7,7 @@ Goals:
 """
 
 from sqlalchemy.orm import Session
-from database.model import Story
+from ..database.model import Story
 
 def increment_story_views(db: Session, story_id: int) -> Story | None:
 
