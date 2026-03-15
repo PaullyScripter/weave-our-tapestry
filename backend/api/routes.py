@@ -25,8 +25,15 @@ from ..database.model import Story
 #files from /features
 from ..features.engagement import increment_story_views
 
+from fastapi import APIRouter
+
+
+router = APIRouter()
+
 
 router = APIRouter(prefix="/api", tags=["api"])
+
+
 
 # DB dependency
 def get_db():

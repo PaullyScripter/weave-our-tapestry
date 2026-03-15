@@ -1,43 +1,88 @@
-import { useMemo, useState } from "react";
-import { db } from "./mockDb";
+import { useEffect, useMemo, useState } from "react";
 
-export function SearchPanel() {
+type Story = {
+  id: number;
+  title: string;
+  culture: string;
+  text: string;
+  views: number;
+};
+
+type SearchPanelProps = {
+  onOpenStory: (story: Story) => void;
+};
+
+const API_BASE =
+  import.meta.env.VITE_API_BASE_URL || "https://weave-our-tapestry.onrender.com/";
+
+export function SearchPanel({ onOpenStory }: SearchPanelProps) {
   const [query, setQuery] = useState("");
+  const [stories, setStories] = useState<Story[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    async function loadStories() {
+      try {
+        setLoading(true);
+        setError("");
+
+        const response = await fetch(`${API_BASE}/api/stories`);
+        if (!response.ok) {
+          throw new Error(`Failed to load stories: ${response.status}`);
+        }
+
+        const data: Story[] = await response.json();
+        setStories(data);
+      } catch (err) {
+        console.error(err);
+        setError("Failed to load stories.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadStories();
+  }, []);
 
   const results = useMemo(() => {
     const q = query.toLowerCase().trim();
     if (!q) return [];
 
-    const hits: any[] = [];
+    return stories.filter((story) =>
+      [story.title, story.culture, story.text]
+        .join(" ")
+        .toLowerCase()
+        .includes(q)
+    );
+  }, [query, stories]);
 
-    for (const user of db.users) {
-      for (const c of user.contributions) {
-        const haystackParts = [
-          c.storyTitle,
-          c.content,
-          user.username,
-          ...(c.comment?.map((cm) => cm.content) ?? []),
-          ...(c.comment?.map((cm) => cm.commenterUsername) ?? []),
-        ];
+  async function handleReadStory(storyId: number) {
+    try {
+      setError("");
 
-        const haystack = haystackParts.join(" ").toLowerCase();
-
-        if (haystack.includes(q)) {
-          hits.push({
-            storyID: c.storyID,
-            storyTitle: c.storyTitle,
-            likesReceived: c.likesReceived,
-            commentCount: c.comment?.length ?? 0,
-            countryofOrigin: c.countryofOrigin,
-            cultureofOrigin: c.cultureofOrigin,
-            authorUsername: user.username,
-          });
-        }
+      const response = await fetch(`${API_BASE}/api/stories/${storyId}`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch story: ${response.status}`);
       }
-    }
 
-    return hits;
-  }, [query]);
+      const story: Story = await response.json();
+      onOpenStory(story);
+
+      await fetch(`${API_BASE}/api/stories/${storyId}/views`, {
+        method: "POST",
+      });
+
+      setStories((prev) =>
+        prev.map((s) =>
+          s.id === storyId ? { ...s, views: s.views + 1 } : s
+        )
+      );
+    } catch (err) {
+      console.error(err);
+      setError("Failed to open story.");
+    }
+  }
 
   return (
     <div>
@@ -54,24 +99,51 @@ export function SearchPanel() {
         }}
       />
 
-      {results.map((r) => (
-        <div
-          key={r.storyID}
-          style={{
-            border: "1px solid #ddd",
-            borderRadius: 8,
-            padding: 10,
-            marginBottom: 8,
-          }}
-        >
-          <strong>{r.storyTitle}</strong>
-          <div>❤️ {r.likesReceived}</div>
-          <div>Comments: {r.commentCount}</div>
-          <div>Country: {r.countryofOrigin}</div>
-          <div>Culture: {r.cultureofOrigin}</div>
-          <div>Author: {r.authorUsername}</div>
-        </div>
-      ))}
+      {loading && <div>Loading stories...</div>}
+      {error && <div style={{ color: "red", marginBottom: 10 }}>{error}</div>}
+
+      {!loading &&
+        !error &&
+        results.map((r) => (
+          <div
+            key={r.id}
+            style={{
+              border: "1px solid #ddd",
+              borderRadius: 8,
+              padding: 10,
+              marginBottom: 8,
+              background: "#fff",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <div>
+              <strong>{r.title}</strong>
+              <div>Culture: {r.culture}</div>
+              <div>Views: {r.views}</div>
+            </div>
+
+            <button
+              type="button"
+              onMouseDown={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleReadStory(r.id);
+              }}
+              style={{
+                marginLeft: 8,
+                padding: "6px 10px",
+                borderRadius: 6,
+                border: "1px solid #ccc",
+                cursor: "pointer",
+              }}
+            >
+              Read Story
+            </button>
+          </div>
+        ))}
     </div>
   );
 }
