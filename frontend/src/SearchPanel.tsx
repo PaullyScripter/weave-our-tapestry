@@ -13,7 +13,7 @@ type SearchPanelProps = {
 };
 
 const API_BASE =
-  import.meta.env.VITE_API_BASE_URL || "https://weave-our-tapestry.onrender.com/";
+  import.meta.env.VITE_API_BASE_URL || "https://weave-our-tapestry.onrender.com";
 
 export function SearchPanel({ onOpenStory }: SearchPanelProps) {
   const [query, setQuery] = useState("");
