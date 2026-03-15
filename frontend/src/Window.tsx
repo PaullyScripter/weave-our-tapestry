@@ -1,134 +1,95 @@
-import { useEffect, useRef, useState} from "react";
+import { useEffect, useRef, useState } from "react";
+
+type WindowProps = {
+  title: string;
+  children: React.ReactNode;
+  initialX?: number;
+  initialY?: number;
+  initialWidth?: number;
+  initialHeight?: number;
+  onClose?: () => void;
+};
 
 export function Window({
   title,
   children,
-}: {
-  title: string;
-  children?: React.ReactNode;
-}) {
-  const [pos, setPos] = useState({ x: 40, y: 120 });
-  const [size, setSize] = useState({ w: 320, h: 220 });
+  initialX = 80,
+  initialY = 80,
+  initialWidth = 700,
+  initialHeight = 500,
+  onClose,
+}: WindowProps) {
+  const [pos, setPos] = useState({ x: initialX, y: initialY });
+  const [size, setSize] = useState({
+    width: initialWidth,
+    height: initialHeight,
+  });
 
-  const dragState = useRef<any>(null);
-  const borderSize = 6;
+  const dragRef = useRef({
+    dragging: false,
+    offsetX: 0,
+    offsetY: 0,
+  });
 
-  function getResizeDirection(e: React.PointerEvent) {
-    const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+  const resizeRef = useRef({
+    resizing: false,
+    startX: 0,
+    startY: 0,
+    startWidth: initialWidth,
+    startHeight: initialHeight,
+  });
 
-    const left = x < borderSize;
-    const right = x > rect.width - borderSize;
-    const top = y < borderSize;
-    const bottom = y > rect.height - borderSize;
-
-    if (top && left) return "nw";
-    if (top && right) return "ne";
-    if (bottom && left) return "sw";
-    if (bottom && right) return "se";
-    if (top) return "n";
-    if (bottom) return "s";
-    if (left) return "w";
-    if (right) return "e";
-
-    return null;
+  function startDrag(e: React.MouseEvent<HTMLDivElement>) {
+    e.preventDefault();
+    dragRef.current.dragging = true;
+    dragRef.current.offsetX = e.clientX - pos.x;
+    dragRef.current.offsetY = e.clientY - pos.y;
   }
 
-  function onPointerDown(e: React.PointerEvent) {
-    if (e.button !== 0) return;
+  function startResize(e: React.MouseEvent<HTMLDivElement>) {
+    e.preventDefault();
+    e.stopPropagation();
 
-    const dir = getResizeDirection(e);
-
-    dragState.current = {
-      mode: dir ? "resize" : "drag",
-      direction: dir,
-      startMouse: { x: e.clientX, y: e.clientY },
-      startPos: { ...pos },
-      startSize: { ...size },
-    };
-
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    resizeRef.current.resizing = true;
+    resizeRef.current.startX = e.clientX;
+    resizeRef.current.startY = e.clientY;
+    resizeRef.current.startWidth = size.width;
+    resizeRef.current.startHeight = size.height;
   }
 
   useEffect(() => {
-    function onMove(e: PointerEvent) {
-      const st = dragState.current;
-      if (!st) return;
-
-      const dx = e.clientX - st.startMouse.x;
-      const dy = e.clientY - st.startMouse.y;
-
-      if (st.mode === "drag") {
+    function onMouseMove(e: MouseEvent) {
+      if (dragRef.current.dragging) {
         setPos({
-          x: st.startPos.x + dx,
-          y: st.startPos.y + dy,
+          x: Math.max(0, e.clientX - dragRef.current.offsetX),
+          y: Math.max(0, e.clientY - dragRef.current.offsetY),
         });
       }
 
-      if (st.mode === "resize") {
-        let { w, h } = st.startSize;
-        let { x, y } = st.startPos;
+      if (resizeRef.current.resizing) {
+        const dx = e.clientX - resizeRef.current.startX;
+        const dy = e.clientY - resizeRef.current.startY;
 
-        const minW = 200;
-        const minH = 120;
-
-        if (st.direction?.includes("e")) {
-          w = Math.max(minW, st.startSize.w + dx);
-        }
-        if (st.direction?.includes("s")) {
-          h = Math.max(minH, st.startSize.h + dy);
-        }
-        if (st.direction?.includes("w")) {
-          w = Math.max(minW, st.startSize.w - dx);
-          x = st.startPos.x + dx;
-        }
-        if (st.direction?.includes("n")) {
-          h = Math.max(minH, st.startSize.h - dy);
-          y = st.startPos.y + dy;
-        }
-
-        setSize({ w, h });
-        setPos({ x, y });
+        setSize({
+          width: Math.max(320, resizeRef.current.startWidth + dx),
+          height: Math.max(220, resizeRef.current.startHeight + dy),
+        });
       }
     }
 
-    function onUp() {
-      dragState.current = null;
+    function onMouseUp() {
+      dragRef.current.dragging = false;
+      resizeRef.current.resizing = false;
     }
 
-    window.addEventListener("pointermove", onMove);
-    window.addEventListener("pointerup", onUp);
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
 
     return () => {
-      window.removeEventListener("pointermove", onMove);
-      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
     };
-  }, []);
-
-  function updateCursor(e: React.PointerEvent) {
-    const dir = getResizeDirection(e);
-
-    const el = e.currentTarget as HTMLElement;
-
-    if (!dir) {
-      el.style.cursor = "default";
-      return;
-    }
-
-    const map: any = {
-      n: "ns-resize",
-      s: "ns-resize",
-      e: "ew-resize",
-      w: "ew-resize",
-      ne: "nesw-resize",
-      sw: "nesw-resize",
-      nw: "nwse-resize",
-      se: "nwse-resize",
-    };
-
-    el.style.cursor = map[dir] || "default";
-  }
+  }, [pos.x, pos.y, size.width, size.height]);
 
   return (
     <div
@@ -137,17 +98,77 @@ export function Window({
         position: "absolute",
         left: pos.x,
         top: pos.y,
-        width: size.w,
-        height: size.h,
+        width: size.width,
+        height: size.height,
+        border: "1px solid #999",
+        borderRadius: 8,
+        background: "#fff",
+        boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
+        overflow: "hidden",
       }}
-      onPointerDown={onPointerDown}
-      onPointerMove={updateCursor}
     >
-      <div className="window-titlebar">
-        <span className="window-title">{title}</span>
+      <div
+        className="window-titlebar"
+        onMouseDown={startDrag}
+        style={{
+          padding: "10px 12px",
+          background: "#f3f3f3",
+          borderBottom: "1px solid #ddd",
+          cursor: "move",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          userSelect: "none",
+          fontWeight: 700,
+        }}
+      >
+        <span>{title}</span>
+
+        {onClose && (
+          <button
+            type="button"
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={onClose}
+            style={{
+              border: "1px solid #ccc",
+              background: "#fff",
+              borderRadius: 6,
+              padding: "4px 8px",
+              cursor: "pointer",
+            }}
+          >
+            Close
+          </button>
+        )}
       </div>
 
-      <div className="window-content">{children}</div>
+      <div
+        className="window-content"
+        onMouseDown={(e) => e.stopPropagation()}
+        onPointerDown={(e) => e.stopPropagation()}
+        style={{
+          position: "relative",
+          padding: 12,
+          height: "calc(100% - 48px)",
+          boxSizing: "border-box",
+          overflow: "auto",
+        }}
+      >
+        {children}
+      </div>
+
+      <div
+        onMouseDown={startResize}
+        style={{
+          position: "absolute",
+          right: 0,
+          bottom: 0,
+          width: 16,
+          height: 16,
+          cursor: "nwse-resize",
+          background: "linear-gradient(135deg, transparent 50%, #999 50%)",
+        }}
+      />
     </div>
   );
 }
