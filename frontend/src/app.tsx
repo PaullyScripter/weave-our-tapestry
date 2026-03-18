@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Window } from "./Window";
 import { SearchPanel } from "./SearchPanel";
+import "./App.css";
 
 type Story = {
   id: number;
@@ -14,8 +15,7 @@ export default function App() {
   const [openStory, setOpenStory] = useState<Story | null>(null);
 
   return (
-    <div>
-      <h1>Weave Our Tapestry</h1>
+    <div style={{ width: "100vw", height: "100vh" }}>
 
       <Window
         title="Story Search"
