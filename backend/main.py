@@ -8,19 +8,22 @@ Objectives:
 - Add global error handler
 - Add logging configuration
 """
+
+
 from dotenv import load_dotenv
 from pathlib import Path
 
 env_path = Path(__file__).resolve().parent / ".env" 
 load_dotenv(dotenv_path=env_path)
 
-
-
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
 from .api.routes import router
 from .database.db import engine
-from .database.db import Base
-from fastapi.middleware.cors import CORSMiddleware
+from .database.model import Base
+
+
 
 app = FastAPI(title="Weave Our Tapestry API")
 
@@ -38,14 +41,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(router)
-
 @app.get("/")
 def root():
     return {"message": "Welcome to our CS250 Group Project"}
-
-@app.get("/health")
-def health():
-    return {"status": "ok"}
 
 app.include_router(router)

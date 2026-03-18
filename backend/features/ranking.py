@@ -10,6 +10,7 @@ Objectives:
 Note: keep simple for now
 """
 
+""" 
 from typing import List, Dict, Any
 
 def rank_results(results: List[Dict[str, Any]], sort: str) -> List[Dict[str, Any]]:
@@ -45,3 +46,5 @@ def rank_results(results: List[Dict[str, Any]], sort: str) -> List[Dict[str, Any
             ),
             reverse=True
         )
+
+  """

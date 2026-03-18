@@ -115,9 +115,9 @@ New stories show views=0 and persist after server restart.
 
 ## Derrick (Search)
 ### De1 — Simple Search (working version first)
-- [ ] Add endpoint: GET /api/search?q=...
-- [ ] Search by scanning title/text (slow but correct)
-- [ ] Return: query, total, results[]
+- [done ] Add endpoint: GET /api/search?q=...
+- [done ] Search by scanning title/text (slow but correct)
+- [done ] Return: query, total, results[]
 
 Why:
 Working search early lets frontend integrate sooner (even before optimization).
