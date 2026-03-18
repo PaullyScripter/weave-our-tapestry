@@ -20,20 +20,12 @@ from pydantic import BaseModel
 from typing import Optional, List
 
 from ..database.db import SessionLocal
-from ..database.model import Story
-
-#files from /features
+from ..database.model import Story, User, UserLogin, UserOut, UserRegister
 from ..features.engagement import increment_story_views
-
-from fastapi import APIRouter
-
-
-router = APIRouter()
-
+from ..features.stories import list_all_stories, get_story_by_id, create_new_story
+from ..features.auth import authenticate_user, register_user
 
 router = APIRouter(prefix="/api", tags=["api"])
-
-
 
 # DB dependency
 def get_db():
@@ -44,7 +36,6 @@ def get_db():
         db.close()
 
 #API contract
-
 class StoryCreate(BaseModel):
     title: str
     culture: Optional[str] = None
@@ -53,38 +44,46 @@ class StoryCreate(BaseModel):
 class StoryOut(BaseModel):
     id: int
     title: str
-    culture: Optional[str]
+    culture: Optional[str] = None
+    country: Optional[str] = None
+    year: Optional[int] = None
+    category: Optional[str] = None
     text: str
     views: int
 
     class Config:
         from_attributes = True
 
+""" 
+TO BE REPLACED
 class SearchResultItem(BaseModel):
     id: int
     title: str
-    culture: Optional[str]
-    text: str
+    culture: Optional[str] = None
+    snippet: str
     views: int
 
 class SearchResponse(BaseModel):
     query: str
     total: int
     results: List[SearchResultItem]
+"""
 
 
 @router.get("/stories", response_model=List[StoryOut])
 def list_stories(db: Session = Depends(get_db)):
-    return db.query(Story).all()
+    return list_all_stories(db)
 
 #receives story_id from URL + queries DB for ID
 @router.get("/stories/{story_id}", response_model = StoryOut)
 def get_story(story_id: int, db: Session = Depends(get_db)):
-    story = db.query(Story).filter(Story.id == story_id).first()
+    story = get_story_by_id(db, story_id)
     if story is None:
         raise HTTPException(status_code = 404, detail = "Story not found")
     return story
 
+"""
+FIXME 
 #registers GET endpoint for search
 @router.get("/search", response_model = SearchResponse)
 def search_stories(
@@ -140,9 +139,13 @@ def search_stories(
         )
         #return typed Pydantic object
         return SearchResponse(query = query_text, total = int(total),  results = results)
-    
+
+ """
 
 
+@router.post("/stories", response_model=StoryOut)
+def create_story(payload: StoryCreate, db: Session = Depends(get_db)):
+    return create_new_story(db, payload)
 
 @router.post("/stories/{story_id}/views")
 def increment_views(story_id: int, db:Session = Depends(get_db)):
@@ -152,16 +155,27 @@ def increment_views(story_id: int, db:Session = Depends(get_db)):
         raise HTTPException(status_code = 404, detail = "Story not found")
     return {"id" : story.id, "views": story.views}
 
-        
+@router.post("/auth/register")
+def register(payload: UserRegister, db: Session = Depends(get_db)):
+    user, error = register_user(db, payload.username, payload.email, payload.password)
 
-@router.post("/stories", response_model=StoryOut)
-def create_story(payload: StoryCreate, db: Session = Depends(get_db)):
-    story = Story(
-        title=payload.title,
-        culture=payload.culture,
-        text=payload.text
-    )
-    db.add(story)
-    db.commit()
-    db.refresh(story)
-    return story
+    if error:
+        raise HTTPException(status_code=400, detail=error)
+    
+    return {"message": "User Registered", "user_id": user.id} 
+
+@router.post("/auth/login")
+def login(payload: UserLogin, db: Session = Depends(get_db)):
+    user, error = authenticate_user(db, payload.email, payload.password)
+
+    if error:
+        raise HTTPException(status_code=401, detail="Invalid information")
+    
+    return {"message": "Login Sucessfully!", "user_id": user.id} 
+
+    
+
+
+
+
+        
