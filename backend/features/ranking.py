@@ -10,10 +10,12 @@ Objectives:
 Note: keep simple for now
 """
 
-""" 
+
 from typing import List, Dict, Any
 
 def rank_results(results: List[Dict[str, Any]], sort: str) -> List[Dict[str, Any]]:
+
+    
     
     if sort == "newest":
         return sorted(results, key=lambda r: r.get("id", 0), reverse=True)
@@ -46,5 +48,3 @@ def rank_results(results: List[Dict[str, Any]], sort: str) -> List[Dict[str, Any
             ),
             reverse=True
         )
-
-  """
