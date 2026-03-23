@@ -68,7 +68,7 @@ npm run dev
 
 ## License
 
-This project is licensed and protected under [MIT](https://choosealicense.com/licenses/mit/).
+This project is licensed and protected under [GPL](https://www.gnu.org/licenses/gpl-3.0.en.html).
 
 
 
