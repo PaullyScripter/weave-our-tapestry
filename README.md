@@ -40,9 +40,9 @@ npm install
 > [!NOTE]
 > You can only run this locally.
 
-For backend:
+For backend (root):
 ```
-python -m uvicorn main:app --reload
+python3 -m uvicorn backend.main:app --reload
 ```
 
 For frontend:
