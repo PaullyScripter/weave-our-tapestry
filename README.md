@@ -56,7 +56,6 @@ npm run dev
 - [Backend](https://weave-our-tapestry.onrender.com/)
 - [API Docs](https://weave-our-tapestry.onrender.com/docs)
 - [UI Prototype](https://www.figma.com/design/6eNdOs9eR4xgMxLMHayxBq/WOT?node-id=0-1&t=GlQmHQXrR2i0VWxH-1)
-- [Documents](https://docs.google.com/document/d/1XGK9D7f0-yu0MbrGEl5tYBmG9O28vWZbOHnNx9ShaHg/edit?usp=sharing)
 
 ## Authors
 
