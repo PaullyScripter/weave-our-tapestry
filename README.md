@@ -3,7 +3,7 @@
 Weave our tapestry serves as a platform for any users to post a specific story, myth, legend, epic, etc that ties to a culture of a nation, as well as informatively and educationally explore other cultures' stories.
 
 > [!WARNING]
-> WOT is still underdevelopment so in this readme you will only be able to view our progress locally.
+> WOT is still underdevelopment so in this readme you will only be able to view our progress.
 
 ## Installing
 
@@ -13,7 +13,7 @@ git clone https://github.com/PaullyScripter/weave-our-tapestry.git
 ```
 ### To set up the backend:
 
-1. Go to the backend folder.
+1. Go to root.
 - If Windows:
 ```
 python3 -m venv .venv
